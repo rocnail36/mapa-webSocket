@@ -1,7 +1,8 @@
 
 import { latLng, LatLng, LeafletEvent, LeafletEventHandlerFn, LeafletEventHandlerFnMap, LeafletMouseEvent, LeafletMouseEventHandlerFn } from 'leaflet'
-import { useMemo, useRef } from 'react'
+import { useContext, useEffect, useMemo, useRef } from 'react'
 import { Marker,  Popup } from 'react-leaflet'
+import { SocketContext } from '../providers/SocketProvider'
 
 
 type Props = {
@@ -14,6 +15,8 @@ export const MarkerClick = ({position,id,changeMarker}:Props) => {
 
     const markerRef = useRef<any>()
 
+    const {socket} = useContext(SocketContext)
+
     const eventHandlers = useMemo(
       () => ({
         drag(data:LeafletEvent ) {
@@ -24,14 +27,24 @@ export const MarkerClick = ({position,id,changeMarker}:Props) => {
           const dataTyped  = (data as unknown as {latlng:{lat:number,lng:number}})
          
           const position = new LatLng(dataTyped.latlng.lat,dataTyped.latlng.lng)
+
+          if(id == null || undefined) return
+
           
-          changeMarker(id,position)
+         socket.emit("moveMark",{id,position})
           
         
         },
       }),
       [],
     )
+
+    useEffect(() => {
+     socket.on("moveMarkFromServer",(data) => {
+           const {id,position} = data
+           changeMarker(id,position)
+     })
+    },[])
   
 
 

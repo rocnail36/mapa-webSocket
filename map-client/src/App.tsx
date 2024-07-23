@@ -4,7 +4,7 @@ import { MapContainer, Marker, Popup, TileLayer, useMapEvent, } from 'react-leaf
 import { LocationMarker } from './components/LocationMarker'
 
 function App() {
-  const [count, setCount] = useState(0)
+  
   const position = [51.505, -0.09]
 
  

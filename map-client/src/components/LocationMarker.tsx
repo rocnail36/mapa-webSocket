@@ -1,25 +1,40 @@
 import { LatLng } from 'leaflet'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Marker, Popup, useMapEvent, useMapEvents } from 'react-leaflet'
+import  { useCallback, useContext, useEffect, useState } from 'react'
+import { useMapEvents } from 'react-leaflet'
 import {v4 as uuid} from "uuid"
 import { MarkerClick } from './Marker'
+import { SocketContext } from '../providers/SocketProvider'
 
 export const LocationMarker = () => {
 
+  const {socket} = useContext(SocketContext)
   const [markers, setmarkers] = useState<{[key:string]:LatLng}>({})
 
 
   const event = useMapEvents({
     click:(data) => {
         const {latlng} = data
-        setmarkers(old => { 
-           const  markers = {...old}
-            markers[uuid()] = latlng
-            return markers
-        })
+        const id = uuid()
+        socket.emit("createMark",{id,latlng})
        }
   })
- console.log(markers)
+
+ 
+  useEffect(() => {
+    socket.on("createMarkFromServer",(data) => {
+
+      const {id,latlng} = data
+
+      setmarkers(old => { 
+        const  markers = {...old}
+         markers[id] = latlng
+         console.log(markers)
+         return markers
+     })
+    })
+  },[])
+
+
 
   const changeMarker = useCallback((id:string,position:LatLng) => {
 
